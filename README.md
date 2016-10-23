@@ -11,7 +11,7 @@ You need mosquitto version 1.2.1 or higher.
 Make sure you have Python dev package installed (`apt-get install
 python-dev` under Debian/Ubuntu).
 
-You must either have mosquitto header files installed globally in
+You must either have mosquitto header (`apt-get install libmosquitto-dev`)files installed globally in
 `/usr/include`, etc. or clone this repository at the top of the
 mosquitto source directory. Then:
 
@@ -24,15 +24,22 @@ Alternatively you can pass full path to mosquitto sources using
     make MOSQUITTO_SRC=/path/to/mosquitto-src
 
 If all goes ok, there should be `auth_plugin_pyauth.so` file in the
-current directory. Copy it under path accessible for mosquitto daemon,
+current directory. Use `make install` or copy it under path accessible for mosquitto daemon,
 e.g.: `/usr/local/lib/mosquitto/`.
 
 ### Troubleshooting
 
 If you get errors while compiling the plugin about `-lmosquitto` then you have a missing link to libmosquitto.
-Just check the file `/usr/lib/libmosquitto.so` or `/usr/lib/mosquitto.so.1` exists and create a symlink:
+Just check the file `/usr/lib/libmosquitto.so` or `/usr/lib/mosquitto.so.1` (also it could be in the directory
+`/usr/lib/x86_64-linux-gnu`) exists and create a symlink:
 
     ln -s /usr/lib/libmosquitto.so.1 /usr/lib/libmosquitto.so
+
+If you get errors while compiling the plugin about `-lcares` then you could have a missing link to libcares.
+Just check the file `/usr/lib/libcares.so.2` (also it could be in the directory
+`/usr/lib/x86_64-linux-gnu`) exists and create a symlink:
+
+    ln -s /usr/lib/libcares.so.2 /usr/lib/libcares.so
 
 And make again the plugin. This time should work.
 
@@ -62,7 +69,8 @@ and provide following global functions:
 * `plugin_cleanup()`: called on plugin cleanup with no arguments
 
 * `unpwd_check(username, password)`: return `True` if given
-  username and password pair is allowed to log in
+  username and password pair is allowed to log in. It's called every time a
+  message is published and only one time when the subscriptor subscribes.
 
 * `acl_check(clientid, username, topic, access)`: return `True` if
   given user is allowed to subscribe (`access =
